@@ -725,6 +725,7 @@ function Party.ShowUI()
 							partyBack:Remove()
 							voteKickBtn:Remove()
 							pokeBtn:Remove()
+							leaveBtn:Remove()
 							visitProfileBtn:Remove()
 							Party.ShowPartyPlyDetails(ply)
 						end
@@ -735,6 +736,7 @@ function Party.ShowUI()
 							partyBack:Remove()
 							voteKickBtn:Remove()
 							pokeBtn:Remove()
+							leaveBtn:Remove()
 							visitProfileBtn:Remove()
 							Party.ShowingPartyPlyDetails = false
 						end
