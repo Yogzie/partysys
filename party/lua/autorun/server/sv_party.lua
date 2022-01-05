@@ -287,3 +287,31 @@ hook.Add("EntityTakeDamage", "Friendly Fire", function(target, dmginfo)
 		end
 	else return end
 end)
+
+
+net.Receive("PartySys.PlyBal.Response", function(len, ply)
+	if not netCD(ply) then
+		-- Do Nothing
+	else
+		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
+		breachCount = breachCount + 1
+	end
+end)
+
+net.Receive("PartySys.UpdateParties", function(len, ply)
+	if not netCD(ply) then
+		-- Do Nothing
+	else
+		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
+		breachCount = breachCount + 1
+	end
+end)
+
+net.Receive("PartySys.SendInviteToPly", function(len, ply)
+	if not netCD(ply) then
+		-- Do Nothing
+	else
+		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
+		breachCount = breachCount + 1
+	end
+end)
