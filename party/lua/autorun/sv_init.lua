@@ -5,7 +5,7 @@ resource.AddFile("resources/images/whiteCross.png")
 
 
 -- Configurabl Values
-
+PartyCfg = {}
 PartyCfg.UIcmd = "!party"
 
 

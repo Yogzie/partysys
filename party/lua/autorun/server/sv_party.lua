@@ -15,29 +15,35 @@ PartySys = {}
 PartySys.Parties = {}
 PartySys.SentInv = {}
 PartySys.ffOn = false
-local count = 0
+local netcdcount = 0
+local netBreachCount
+local invcdcount = 0 
+local invBreachCount
 -- Configureable values
-local netCdLength = 0.2 -- If net messages are sent quicker than this time, it'll trigger the netCD. (40 times in a row and it results in player being kicked.)
+local invcdLength = 10
+local netCdLength = 0.4 -- If net messages are sent quicker than this time, it'll trigger the netCD. (40 times in a row and it results in player being kicked.)
+-- netCDLength Note: There is a method to get around the net cooldown. (it will still display to the console who is netspamming) in order to prevent this method (very rare method)
+-- You should keep the netCdLength to >= 0.4 as that's the minimum time that can defend from this rare attack. I'll work on a method to stop this method as the addon is developped further.
 local partyMaxSize = 5 
 
 -- Counter NetMessage DoS
 function netCD(ply)
 	-- If you are not meant to be seeing this.. shoo.
-	count = count + 1
-	if math.mod(count, 2) == 0 then
+	netcdcount = netcdcount + 1
+	if math.mod(netcdcount, 2) == 0 then
 		-- It's an even number
 		local allowTime = cdTime + netCdLength
 		if allowTime > CurTime() then
-			breachCount = breachCount + 1
-			if breachCount > 40 then 
+			netBreachCount = netBreachCount + 1
+			if netBreachCount > 40 then 
 				ply:Kick("[EC] Kicked for packet overflow") -- This can be changed to a softer punishment. Kick isn't the only solution.
-				breachCount = 0
+				netBreachCount = 0
 			else 
 				return true
 			end
 		else 
 			--print("Was Fine")
-			breachCount = 0
+			netBreachCount = 0
 			return false
 		end 	
 	else
@@ -60,7 +66,7 @@ net.Receive("PartySys.PlyBal", function(len, ply)
 		end
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end
 end)
 
@@ -113,7 +119,7 @@ net.Receive("PartySys.ReqCreateParty", function(len, ply)
 		end
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end
 
 end)
@@ -134,37 +140,70 @@ net.Receive("PartySys.RequestLeave", function(len, ply)
 		end
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end
 end)
 
 
+function PartySys.InvCD(ply)
+	invcdcount = invcdcount + 1
+	if math.mod(invcdcount, 2) == 0 then
+		-- It's an even number
+		local allowTime = cdTime + invCdLength	
+		if allowTime > CurTime() then 
+			-- Cooldown has not passed
+			ply:ChatPrint("You're Sending Invites too Quickly. Slow Down (10 second cooldown)")
+			invBreachCount = invBreachCount + 1
+			return true
+		else
+			invBreachCount = 0
+			return false 
+		end -- Cooldown has passed.
+	else
+		cdTime = CurTime()
+		return false
+	end
+end
 
 net.Receive("PartySys.SendInvite", function(len, ply)
 	if not netCD(ply) then
-		local target = net.ReadEntity()
-		local targetParty = net.ReadString()
-		print(targetParty)
-		local counter = 0
-		for k, v in pairs(PartySys.Parties) do 
-			if v[1] == targetParty then
-				counter = counter + 1
-			end
-		end
-		if counter <= partyMaxSize then
+		if not InvCD then
+			local target = net.ReadEntity()
+			local targetParty = net.ReadString()
+			local allowInv = true
+			print(targetParty)
+			local counter = 0
 			if target:IsValid() then
-				net.Start("PartySys.SendInviteToPly")
-				net.WriteEntity(ply)
-				net.WriteString(targetParty)
-				net.Send(target)
-				table.insert(PartySys.SentInv, ply) -- Adds the player to the sent invites table
+				for k, v in pairs(PartySys.Parties) do 
+					if v[1] == targetParty then
+						counter = counter + 1
+					end
+					if v[0] == target then 
+						-- they are already in the list meaning they have a party
+						allowInv = false
+					end
+				end
+				if allowInv then
+					if counter <= partyMaxSize then
+						net.Start("PartySys.SendInviteToPly")
+						net.WriteEntity(ply)
+						net.WriteString(targetParty)
+						net.Send(target)
+						table.insert(PartySys.SentInv, ply) -- Adds the player to the sent invites table
+					else
+						ply:ChatPrint("[EP] Party has reached the max capacity: "..tostring(partyMaxSize))
+					end
+				else
+					ply:ChatPrint("[EP] Player is already in a party. They must leave first.")
+				end
+			else
+				ply:ChatPrint("[EP] Player isn't valid")
 			end
-		else
-			ply:ChatPrint("Party has reached the max capacity: "..tostring(partyMaxSize))
+
 		end
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end	
 end)
 
@@ -193,14 +232,14 @@ net.Receive("PartySys.AcceptInvite", function(len,ply)
 		end
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end	
 end)
 
 -- need to validate the party list
-function PartySys.Validate()
+function PartySys.Validate() -- Needs to be improved
 	for k, v in pairs(PartySys.Parties) do 
-		if not v then
+		if not IsValid(v[0]) then
 			table.remove(PartySys.Parties, k)
 		end
 	end
@@ -229,7 +268,7 @@ net.Receive("PartySys.ReqUpdate", function(len,ply)
 		PartySys.UpdateAPly(ply)
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end	
 end)
 
@@ -250,7 +289,7 @@ net.Receive("PartySys.ToggleFF", function(len,ply)
 		print(PartySys.ffOn)
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end
 end)
 
@@ -294,7 +333,7 @@ net.Receive("PartySys.PlyBal.Response", function(len, ply)
 		-- Do Nothing
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end
 end)
 
@@ -303,7 +342,7 @@ net.Receive("PartySys.UpdateParties", function(len, ply)
 		-- Do Nothing
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end
 end)
 
@@ -312,6 +351,6 @@ net.Receive("PartySys.SendInviteToPly", function(len, ply)
 		-- Do Nothing
 	else
 		print("User: "..ply:GetName().." STEAMID: ".. ply:SteamID() .." Is sending net messages abnormally fast.")
-		breachCount = breachCount + 1
+		netBreachCount = netBreachCount + 1
 	end
 end)

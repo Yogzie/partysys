@@ -285,160 +285,162 @@ function Party.ShowUI()
 				end
 				
 				if plyclear then
-					Party.ShowingPlyDetails = true
-					-- Creating a Player Details + Options Section.
-					local aviBack = vgui.Create("DFrame", main)
-					aviBack:SetPos(mainW * 0.7, mainH * 0.2)
-					aviBack:SetSize(mainW * 0.24, mainH * 0.18)
-					aviBack:SetDraggable(false)
-					aviBack:SetTitle("")
-					aviBack:ShowCloseButton(false)
-					aviBack.Paint = function(self,w,h)
-						surface.SetDrawColor(255,255,255,opacity)
-						surface.DrawRect(0,0,w,h)
-					end
-					-- Creating the avatar.
-					local avi = vgui.Create("AvatarImage", aviBack)
-					avi:SetPos(aviBack:GetWide() * 0.019, aviBack:GetTall() * 0.02)
-					avi:SetSize(aviBack:GetWide()*0.982, aviBack:GetTall() * 0.98)
-					avi:SetPlayer(ply, 128)
-
-					-- Creating the Name Field (Detail)
-					local nameBack = vgui.Create("DFrame", main)
-					nameBack:SetPos(mainW * 0.68, mainH * 0.4)
-					nameBack:SetSize(mainW * 0.28, mainH * 0.05)
-					nameBack:SetDraggable(false)
-					nameBack:SetTitle("")
-					nameBack:ShowCloseButton(false)
-					-- Caching the players name so that we don't have to fetch it every frame
-					local plyName = ply:Name()
-					nameBack.Paint = function(self, w, h)
-						draw.RoundedBox(5, 0,0,w,h, Color(29,29,35,opacity))
-						draw.SimpleText(plyName, "ccfontsmall", nameBack:GetWide() * 0.48, nameBack:GetTall()*0.45, Color( 255, 255, 255, opacity ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					end
-
-					-- Fetching the players balance from the server
-					net.Start("PartySys.PlyBal")
-					net.WriteEntity(ply)
-					net.SendToServer()
-					local plyMoney = 0
-					net.Receive("PartySys.PlyBal.Response", function()
-						plyMoney = net.ReadString()
-					end)
-
-					-- Creating the Money Field (Detail)
-					local moneyBack = vgui.Create("DFrame", main)
-					moneyBack:SetPos(mainW * 0.68, mainH * 0.46)
-					moneyBack:SetSize(mainW * 0.28, mainH * 0.05)
-					moneyBack:SetDraggable(false)
-					moneyBack:SetTitle("")
-					moneyBack:ShowCloseButton(false)
-					moneyBack.Paint = function(self, w, h)
-						draw.RoundedBox(5, 0,0,w,h, Color(29,29,35,opacity))
-						draw.SimpleText(plyMoney, "ccfontsmall", moneyBack:GetWide() * 0.48, moneyBack:GetTall()*0.45, Color( 50, 255, 50, opacity ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					end
-
-					-- Check if player is in a party.
-					for k, v in pairs(clPartyList) do 
-						if v[0] == LocalPlayer() then 
-							partyName = v[1]
+					if IsValid(ply) then
+						Party.ShowingPlyDetails = true
+						-- Creating a Player Details + Options Section.
+						local aviBack = vgui.Create("DFrame", main)
+						aviBack:SetPos(mainW * 0.7, mainH * 0.2)
+						aviBack:SetSize(mainW * 0.24, mainH * 0.18)
+						aviBack:SetDraggable(false)
+						aviBack:SetTitle("")
+						aviBack:ShowCloseButton(false)
+						aviBack.Paint = function(self,w,h)
+							surface.SetDrawColor(255,255,255,opacity)
+							surface.DrawRect(0,0,w,h)
 						end
-					end
+						-- Creating the avatar.
+						local avi = vgui.Create("AvatarImage", aviBack)
+						avi:SetPos(aviBack:GetWide() * 0.019, aviBack:GetTall() * 0.02)
+						avi:SetSize(aviBack:GetWide()*0.982, aviBack:GetTall() * 0.98)
+						avi:SetPlayer(ply, 128)
 
-					-- Creating Party Indicator (Current Party Name)
-					local partyBack = vgui.Create("DFrame", main)
-					partyBack:SetPos(mainW * 0.68, mainH * 0.522)
-					partyBack:SetSize(mainW * 0.28, mainH * 0.05)
-					partyBack:SetDraggable(false)
-					partyBack:SetTitle("")
-					partyBack:ShowCloseButton(false)
-					if isstring(partyName) then
-						if string.len(partyName) > 1 then 
+						-- Creating the Name Field (Detail)
+						local nameBack = vgui.Create("DFrame", main)
+						nameBack:SetPos(mainW * 0.68, mainH * 0.4)
+						nameBack:SetSize(mainW * 0.28, mainH * 0.05)
+						nameBack:SetDraggable(false)
+						nameBack:SetTitle("")
+						nameBack:ShowCloseButton(false)
+						-- Caching the players name so that we don't have to fetch it every frame
+						local plyName = ply:Name()
+						nameBack.Paint = function(self, w, h)
+							draw.RoundedBox(5, 0,0,w,h, Color(29,29,35,opacity))
+							draw.SimpleText(plyName, "ccfontsmall", nameBack:GetWide() * 0.48, nameBack:GetTall()*0.45, Color( 255, 255, 255, opacity ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+						end
+
+						-- Fetching the players balance from the server
+						net.Start("PartySys.PlyBal")
+						net.WriteEntity(ply)
+						net.SendToServer()
+						local plyMoney = 0
+						net.Receive("PartySys.PlyBal.Response", function()
+							plyMoney = net.ReadString()
+						end)
+
+						-- Creating the Money Field (Detail)
+						local moneyBack = vgui.Create("DFrame", main)
+						moneyBack:SetPos(mainW * 0.68, mainH * 0.46)
+						moneyBack:SetSize(mainW * 0.28, mainH * 0.05)
+						moneyBack:SetDraggable(false)
+						moneyBack:SetTitle("")
+						moneyBack:ShowCloseButton(false)
+						moneyBack.Paint = function(self, w, h)
+							draw.RoundedBox(5, 0,0,w,h, Color(29,29,35,opacity))
+							draw.SimpleText(plyMoney, "ccfontsmall", moneyBack:GetWide() * 0.48, moneyBack:GetTall()*0.45, Color( 50, 255, 50, opacity ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+						end
+
+						-- Check if player is in a party.
+						for k, v in pairs(clPartyList) do 
+							if v[0] == LocalPlayer() then 
+								partyName = v[1]
+							end
+						end
+
+						-- Creating Party Indicator (Current Party Name)
+						local partyBack = vgui.Create("DFrame", main)
+						partyBack:SetPos(mainW * 0.68, mainH * 0.522)
+						partyBack:SetSize(mainW * 0.28, mainH * 0.05)
+						partyBack:SetDraggable(false)
+						partyBack:SetTitle("")
+						partyBack:ShowCloseButton(false)
+						if isstring(partyName) then
+							if string.len(partyName) > 1 then 
+								partyName = "No Party"
+							end
+						else
 							partyName = "No Party"
 						end
-					else
-						partyName = "No Party"
-					end
-					partyBack.Paint = function(self, w, h)
-						draw.RoundedBox(5, 0,0,w,h, Color(29,29,35,opacity))
-						draw.SimpleText(partyName, "ccfontsmall", partyBack:GetWide() * 0.48, partyBack:GetTall()*0.45, Color(255,255,255, opacity ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					end
+						partyBack.Paint = function(self, w, h)
+							draw.RoundedBox(5, 0,0,w,h, Color(29,29,35,opacity))
+							draw.SimpleText(partyName, "ccfontsmall", partyBack:GetWide() * 0.48, partyBack:GetTall()*0.45, Color(255,255,255, opacity ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+						end
 
-					-- Fetch Player Party
-					for k, v in pairs(clPartyList) do 
-						for i, o in pairs(clPartyList[k]) do
-							if i == 0 then
-								if o == ply then
-									partyName = clPartyList[k][1]
+						-- Fetch Player Party
+						for k, v in pairs(clPartyList) do 
+							for i, o in pairs(clPartyList[k]) do
+								if i == 0 then
+									if o == ply then
+										partyName = clPartyList[k][1]
+									end
 								end
 							end
 						end
-					end
 
-					-- Creating Invite Button
-					local inviteBtn = vgui.Create("DButton", main)
-					inviteBtn:SetPos(mainW * 0.68, mainH * 0.9)
-					inviteBtn:SetSize(mainW * 0.28, mainH * 0.05)
-					inviteBtn:SetText("Invite to Party")
-					inviteBtn:SetTextColor(Color(255,255,255,opacity))
-					local btnClr = Color(29,29,35,opacity)
-					inviteBtn.Paint = function(self, w, h)
-						if self:IsHovered() then
-							btnClr = Color(50,50,60,opacity)
-							if self:IsDown() then
-								btnClr = Color(20,20,28,opacity)
+						-- Creating Invite Button
+						local inviteBtn = vgui.Create("DButton", main)
+						inviteBtn:SetPos(mainW * 0.68, mainH * 0.9)
+						inviteBtn:SetSize(mainW * 0.28, mainH * 0.05)
+						inviteBtn:SetText("Invite to Party")
+						inviteBtn:SetTextColor(Color(255,255,255,opacity))
+						local btnClr = Color(29,29,35,opacity)
+						inviteBtn.Paint = function(self, w, h)
+							if self:IsHovered() then
+								btnClr = Color(50,50,60,opacity)
+								if self:IsDown() then
+									btnClr = Color(20,20,28,opacity)
+								end
+							else
+								btnClr = Color(29,29,35,opacity)
 							end
+							draw.RoundedBox(5, 0,0,w,h, btnClr)
+						end
+						-- Caching local variable for use in invite
+						Party.partyName = ""
+						PrintTable(clPartyList)
+						for k, v in pairs(clPartyList) do 
+							if v[0] == LocalPlayer() then
+								Party.partyName = v[1]
+								IsInParty = true
+							end
+						end
+						if IsInParty then 
+							inviteBtn:SetDisabled(false)
+						else 
+							inviteBtn:SetDisabled(true)
+						end
+						if ply == LocalPlayer() then
+							inviteBtn:SetDisabled(true)
 						else
-							btnClr = Color(29,29,35,opacity)
+							inviteBtn:SetDisabled(false)
 						end
-						draw.RoundedBox(5, 0,0,w,h, btnClr)
-					end
-					-- Caching local variable for use in invite
-					Party.partyName = ""
-					PrintTable(clPartyList)
-					for k, v in pairs(clPartyList) do 
-						if v[0] == LocalPlayer() then
-							Party.partyName = v[1]
-							IsInParty = true
+						-- function to open players steam profile
+						function inviteBtn:DoClick()
+							-- Start the invite process.
+							net.Start("PartySys.SendInvite")
+							net.WriteEntity(ply)
+							net.WriteString(Party.partyName)
+							print(Party.partyName)
+							net.SendToServer()
 						end
-					end
-					if IsInParty then 
-						inviteBtn:SetDisabled(false)
-					else 
-						inviteBtn:SetDisabled(true)
-					end
-					if ply == LocalPlayer() then
-						inviteBtn:SetDisabled(true)
-					else
-						inviteBtn:SetDisabled(false)
-					end
-					-- function to open players steam profile
-					function inviteBtn:DoClick()
-						-- Start the invite process.
-						net.Start("PartySys.SendInvite")
-						net.WriteEntity(ply)
-						net.WriteString(Party.partyName)
-						print(Party.partyName)
-						net.SendToServer()
-					end
 
-					-- Function to close a players details
-					function Party.ChangePlyDetails(ply)
-						aviBack:Remove()
-						nameBack:Remove()
-						moneyBack:Remove()
-						partyBack:Remove()
-						inviteBtn:Remove()
-						Party.ShowingPlyDetails = false
-						Party.ShowPlyDetails(ply)
-					end
-					function Party.ClosePlyDetails(ply)
-						aviBack:Remove()
-						nameBack:Remove()
-						moneyBack:Remove()
-						partyBack:Remove()
-						inviteBtn:Remove()
-						Party.ShowingPlyDetails = false
+						-- Function to close a players details
+						function Party.ChangePlyDetails(ply)
+							aviBack:Remove()
+							nameBack:Remove()
+							moneyBack:Remove()
+							partyBack:Remove()
+							inviteBtn:Remove()
+							Party.ShowingPlyDetails = false
+							Party.ShowPlyDetails(ply)
+						end
+						function Party.ClosePlyDetails(ply)
+							aviBack:Remove()
+							nameBack:Remove()
+							moneyBack:Remove()
+							partyBack:Remove()
+							inviteBtn:Remove()
+							Party.ShowingPlyDetails = false
+						end
 					end
 				end
 
@@ -501,7 +503,7 @@ function Party.ShowUI()
 
 				for i, o in pairs(partyList) do
 					local ply = o
-					if ply:IsValid() then 
+					if IsValid(ply) then 
 						local plyBtn = partyPlyList:Add("DButton")
 
 						plyBtn:DockMargin(2,2,2,2)
@@ -639,17 +641,20 @@ function Party.ShowUI()
 						function visitProfileBtn:DoClick()
 							ply:ShowProfile()
 						end
-
-						-- Creating Leave Server Button
+						local showingLeaveBtn = false
+						-- Creating Leave Party Button
+						-- Leave Party Button is in the Party table because it needs to be exclusive to this addon (hard to bug other addons in the Party table)
+						-- It's not local because, it being in an if statement causes issues with the removal of it as the removal functions wont have access to the local vars of this condition
 						if ply == LocalPlayer() then 
 							-- Creating Poke Button
-							local leaveBtn = vgui.Create("DButton", main)
-							leaveBtn:SetPos(mainW * 0.68, mainH * 0.719)
-							leaveBtn:SetSize(mainW * 0.28, mainH * 0.05)
-							leaveBtn:SetText("Leave Party")
-							leaveBtn:SetTextColor(Color(255,255,255,opacity))
+							showingLeaveBtn = true
+							Party.LeaveBtn = vgui.Create("DButton", main)
+							Party.LeaveBtn:SetPos(mainW * 0.68, mainH * 0.719)
+							Party.LeaveBtn:SetSize(mainW * 0.28, mainH * 0.05)
+							Party.LeaveBtn:SetText("Leave Party")
+							Party.LeaveBtn:SetTextColor(Color(255,255,255,opacity))
 							local btnClr = Color(29,29,35,opacity)
-							leaveBtn.Paint = function(self, w, h)
+							Party.LeaveBtn.Paint = function(self, w, h)
 								if self:IsHovered() then
 									btnClr = Color(50,50,60,opacity)
 									if self:IsDown() then
@@ -661,7 +666,7 @@ function Party.ShowUI()
 								draw.RoundedBox(5, 0,0,w,h, btnClr)
 							end
 
-							function leaveBtn.DoClick()
+							function Party.LeaveBtn.DoClick()
 								net.Start("PartySys.RequestLeave")
 								net.WriteString(party)
 								net.SendToServer()
@@ -725,7 +730,14 @@ function Party.ShowUI()
 							partyBack:Remove()
 							voteKickBtn:Remove()
 							pokeBtn:Remove()
-							leaveBtn:Remove()
+							if showingLeaveBtn then
+								if ply != LocalPlayer then
+									Party.LeaveBtn:Remove()
+									showingLeaveBtn = false
+								end
+							end
+
+
 							visitProfileBtn:Remove()
 							Party.ShowPartyPlyDetails(ply)
 						end
@@ -736,7 +748,10 @@ function Party.ShowUI()
 							partyBack:Remove()
 							voteKickBtn:Remove()
 							pokeBtn:Remove()
-							leaveBtn:Remove()
+							if showingLeaveBtn then
+								Party.LeaveBtn:Remove()
+								showingLeaveBtn = false
+							end
 							visitProfileBtn:Remove()
 							Party.ShowingPartyPlyDetails = false
 						end
